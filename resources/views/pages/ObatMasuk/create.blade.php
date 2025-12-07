@@ -84,40 +84,34 @@
 
                 </form>
 
-            </div>
-        </div>
-    </div>
-</div>
+                <script>
+                    let index = 1;
 
-<script>
-    let index = 1;
+                    document.getElementById('add-product').addEventListener('click', function() {
+                        const wrapper = document.getElementById('product-wrapper');
+                        const firstItem = wrapper.querySelector('.product-item');
+                        const newItem = firstItem.cloneNode(true);
 
-    document.getElementById('add-product').addEventListener('click', function() {
-        const wrapper = document.getElementById('product-wrapper');
-        const firstItem = wrapper.querySelector('.product-item');
-        const newItem = firstItem.cloneNode(true);
+                        newItem.querySelectorAll('input, select').forEach(el => {
+                            el.value = '';
+                            const name = el.getAttribute('name');
+                            if (name) {
+                                const newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                                el.setAttribute('name', newName);
+                            }
+                        });
 
-        // Reset nilai + update indeks name[]
-        newItem.querySelectorAll('input, select').forEach(el => {
-            el.value = '';
-            const name = el.getAttribute('name');
-            if (name) {
-                const newName = name.replace(/\[\d+\]/, '[' + index + ']');
-                el.setAttribute('name', newName);
-            }
-        });
+                        wrapper.appendChild(newItem);
+                        index++;
+                    });
 
-        wrapper.appendChild(newItem);
-        index++;
-    });
-
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-item')) {
-            const items = document.querySelectorAll('.product-item');
-            if (items.length > 1) {
-                e.target.closest('.product-item').remove();
-            }
-        }
-    });
-</script>
+                    document.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('remove-item')) {
+                            const items = document.querySelectorAll('.product-item');
+                            if (items.length > 1) {
+                                e.target.closest('.product-item').remove();
+                            }
+                        }
+                    });
+                </script>
 @endsection
