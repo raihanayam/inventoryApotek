@@ -39,6 +39,31 @@ class ObatKeluarController extends Controller
             'Jumlah.*' => 'required|numeric|min:1',
         ]);
 
+        // ============================
+        // VALIDASI STOK SEBELUM SIMPAN
+        // ============================
+        foreach ($request->product_id as $index => $productId) {
+
+            $product = Product::find($productId);
+            $jumlah = $request->Jumlah[$index];
+
+            // Untuk jenis keluar biasa
+            if ($request->Jenis_Keluar !== "Kadaluarsa") {
+
+                $totalStok = $product->detail_obat_masuk()->sum('Jumlah');
+
+                if ($jumlah > $totalStok) {
+                    throw ValidationException::withMessages([
+                        'Jumlah' => "Stok untuk {$product->name} tidak mencukupi! (Stok tersedia: {$totalStok})"
+                    ]);
+                }
+            }
+        }
+        // ============================
+        // END VALIDASI STOK
+        // ============================
+
+
         DB::transaction(function () use ($request) {
 
             // Create transaksi utama
@@ -58,8 +83,9 @@ class ObatKeluarController extends Controller
                 $jumlah = $request->Jumlah[$index];
                 $product = Product::find($productId);
 
-                // Validasi stok cukup
+                // Jika jenis keluar KADALUARSA → auto ambil batch expired
                 if ($request->Jenis_Keluar == "Kadaluarsa") {
+
                     $expiredBatch = $product->detail_obat_masuk()
                         ->where('Tanggal_Kadaluwarsa', '<', now())
                         ->orderBy('Tanggal_Kadaluwarsa', 'asc')
@@ -67,10 +93,9 @@ class ObatKeluarController extends Controller
 
                     if ($expiredBatch) {
 
-                        // Semua stok expired digunakan
                         $jumlah = $expiredBatch->Jumlah;
 
-                        // Hapus batchnya
+                        // Hapus batch kadaluarsa
                         $expiredBatch->delete();
                     }
                 }
@@ -78,8 +103,8 @@ class ObatKeluarController extends Controller
                 // Insert detail
                 $detail = DetailObatKeluar::create([
                     'obat_keluar_id' => $obat_keluar->id,
-                    'product_id' => $productId,
-                    'Jumlah' => $jumlah,
+                    'product_id'     => $productId,
+                    'Jumlah'         => $jumlah,
                 ]);
 
                 // Generate ID detail
@@ -89,7 +114,7 @@ class ObatKeluarController extends Controller
                 // Hapus batch yang sudah habis
                 $product->detail_obat_masuk()->where('Jumlah', 0)->delete();
 
-                // Hitung ulang total stok berdasarkan detail batch
+                // Hitung total stok berdasarkan batch
                 $totalStok = $product->detail_obat_masuk()->sum('Jumlah');
 
                 // Update stok di tabel products
@@ -115,12 +140,13 @@ class ObatKeluarController extends Controller
 
         // Kembalikan stok
         foreach ($obat_keluar->detail_obat_keluar as $detail) {
-            $product = Product::find($detail->product_id);
-            if ($product) {
-                $product->Stok += $detail->Jumlah; // ← perbaikan di sini
-                $product->save();
-            }
+        $product = Product::find($detail->product_id);
+
+        if ($product) {
+            $product->stock += $detail->jumlah; 
+            $product->save();
         }
+    }
 
         $obat_keluar->detail_obat_keluar()->delete();
         $obat_keluar->delete();

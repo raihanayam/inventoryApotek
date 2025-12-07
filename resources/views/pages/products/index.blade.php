@@ -47,7 +47,7 @@
                                     <td>{{ $product->name }}</td>
                                     <td>{{ $product->category->name ?? '-' }}</td>
                                     <td>{{ $product->satuan->name ?? '-' }}</td>
-                                    <td class="text-center">{{ $product->stock ?? 0 }}</td>
+                                    <td>{{ $product->stokSekarang }}</td>
                                     <td>{{ $product->expiredSoonest() ?? '-' }}</td>
                                     <td>
                                         <div class="d-flex">

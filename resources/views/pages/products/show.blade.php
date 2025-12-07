@@ -46,7 +46,7 @@
                     </tr>
                     <tr>
                         <th>Stok Saat Ini</th>
-                        <td>{{ $product->stock ?? 0 }}</td>
+                        <td>{{ $stokSekarang }}</td>
                     </tr>
                     <tr>
                         <th>Batch (Harga Beli & Expired)</th>
