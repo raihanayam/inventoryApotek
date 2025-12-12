@@ -11,18 +11,19 @@ class DetailObatKeluar extends Model
 
     protected $guarded = [];
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id', 'id');
-    }
+public function product()
+{
+    return $this->belongsTo(Product::class, 'product_id', 'id');
+}
 
-    public function obatkeluar()
-    {
-        return $this->belongsTo(ObatKeluar::class, 'obat_keluar_id', 'id');
-    }
+public function obatkeluar()
+{
+    return $this->belongsTo(ObatKeluar::class, 'Id_Keluar', 'Id_Keluar');
+}
 
-    public function satuan()
-    {
-        return $this->belongsTo(Satuan::class, 'satuan_id', 'id');
-    }
+public function satuan()
+{
+    return $this->belongsTo(Satuan::class, 'satuan_id', 'id');
+}
+
 }

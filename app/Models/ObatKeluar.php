@@ -21,8 +21,9 @@ class ObatKeluar extends Model
         return $this->belongsTo(User::class, 'Id_User', 'id');
     }
 
-    public function detail_obat_keluar()
-    {
-        return $this->hasMany(DetailObatKeluar::class, 'obat_keluar_id', 'id');
-    }
+public function detail_obat_keluar()
+{
+    return $this->hasMany(DetailObatKeluar::class, 'Id_Keluar', 'Id_Keluar');
+}
+
 }
