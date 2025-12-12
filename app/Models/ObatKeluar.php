@@ -10,19 +10,19 @@ class ObatKeluar extends Model
     use HasFactory;
 
     protected $fillable = [
-        'Id_Keluar',
-        'Id_User',
-        'Tanggal_Keluar',
-        'Jenis_Keluar',
+        'id_keluar',  // pastikan sesuai kolom DB
+        'id_user',
+        'tanggal_keluar',
+        'jenis_keluar',
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'Id_User', 'id');
+        return $this->belongsTo(User::class, 'id_user', 'id');
     }
 
     public function detail_obat_keluar()
     {
-        return $this->hasMany(DetailObatKeluar::class, 'Id_Keluar', 'Id_Keluar');
+        return $this->hasMany(DetailObatKeluar::class, 'id_keluar', 'id_keluar');
     }
 }
