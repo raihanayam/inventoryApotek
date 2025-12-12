@@ -25,7 +25,7 @@ class ObatKeluar extends Model
 
     public function detail_obat_keluar()
     {
+        // relasi sudah benar
         return $this->hasMany(DetailObatKeluar::class, 'obat_keluar_id', 'id');
     }
 }
-
