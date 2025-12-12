@@ -9,6 +9,8 @@ class ObatKeluar extends Model
 {
     use HasFactory;
 
+    protected $table = 'obat_keluar';
+
     protected $fillable = [
         'Id_Keluar',
         'Id_User',
@@ -26,3 +28,4 @@ class ObatKeluar extends Model
         return $this->hasMany(DetailObatKeluar::class, 'obat_keluar_id', 'id');
     }
 }
+
