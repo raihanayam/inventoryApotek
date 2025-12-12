@@ -14,7 +14,12 @@ class ObatKeluarController extends Controller
 {
     public function index()
     {
-        $obat_keluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
+        $obat_keluars = ObatKeluar::with([
+                                'user',
+                                'detail_obat_keluar',
+                                'detail_obat_keluar.product',
+                                'detail_obat_keluar.satuan'
+                            ])
                             ->orderBy('Tanggal_Keluar', 'ASC')
                             ->paginate(7);
 
@@ -158,7 +163,12 @@ class ObatKeluarController extends Controller
             return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
         }
 
-        $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
+        $obatKeluars = ObatKeluar::with([
+                'user',
+                'detail_obat_keluar',
+                'detail_obat_keluar.product',
+                'detail_obat_keluar.satuan'
+            ])
             ->when($bulan, function ($q) use ($bulan) {
                 $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
                 ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
