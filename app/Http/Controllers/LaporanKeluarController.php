@@ -22,7 +22,7 @@ class LaporanKeluarController extends Controller
             ->appends(['bulan' => $bulan]);
 
 
-        // ======== GRAFIK (PERBAIKAN PENTING) ==========
+        // ======== GRAFIK ==========
         $currentYear = ObatKeluar::selectRaw('YEAR(Tanggal_Keluar) AS y')
             ->orderBy('y', 'desc')
             ->value('y') ?? date('Y');
