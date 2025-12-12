@@ -22,7 +22,9 @@ class LaporanKeluarController extends Controller
             ->appends(['bulan' => $bulan]); // agar pagination tetap bawa filter
 
         // ========== GRAFIK ==========
-        $currentYear = date('Y');
+        $currentYear = ObatKeluar::selectRaw('YEAR(Tanggal_Keluar) AS y')
+            ->orderBy('y', 'desc')
+            ->value('y') ?? date('Y');
 
         $chartRaw = DetailObatKeluar::join('obat_keluars', 'detail_obat_keluars.obat_keluar_id', '=', 'obat_keluars.id')
             ->selectRaw("MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluars.Jumlah) AS total_keluar")
@@ -47,17 +49,16 @@ class LaporanKeluarController extends Controller
         ));
     }
 
-    public function exportPDF(Request $request)
-    {
+    public function exportPDF(Request $request) {
+        $bulan = $request->bulan;
         $start_date = $request->start_date;
         $end_date = $request->end_date;
 
-        // Error jika hanya satu tanggal diisi
-        if (($start_date && !$end_date) || (!$start_date && $end_date)) {
-            return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
-        }
-
         $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
+            ->when($bulan, function ($q) use ($bulan) {
+                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
+                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+            })
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
                 $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
             })
@@ -66,14 +67,11 @@ class LaporanKeluarController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
             'obatKeluars' => $obatKeluars,
+            'bulan' => $bulan,
             'start_date' => $start_date,
             'end_date' => $end_date
         ])->setPaper('A4', 'portrait');
 
-        $filename = $start_date && $end_date
-            ? "Laporan_Obat_Keluar_{$start_date}_sd_{$end_date}.pdf"
-            : "Laporan_Obat_Keluar_Semua.pdf";
-
-        return $pdf->download($filename);
+        return $pdf->download('Laporan_Obat_Keluar.pdf');
     }
 }

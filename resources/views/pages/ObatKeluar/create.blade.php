@@ -29,6 +29,11 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="Tanggal_Keluar">Tanggal Keluar</label>
+                            <input type="date" name="Tanggal_Keluar" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
                             <label for="Jenis_Keluar">Jenis Keluar</label>
                             <select name="Jenis_Keluar" class="form-control">
                                 <option value="">-- Pilih Jenis --</option>

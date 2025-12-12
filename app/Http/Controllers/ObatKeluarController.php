@@ -39,9 +39,7 @@ class ObatKeluarController extends Controller
             'Jumlah.*' => 'required|numeric|min:1',
         ]);
 
-        // ============================
-        // VALIDASI STOK SEBELUM SIMPAN
-        // ============================
+        // validasi stok
         foreach ($request->product_id as $index => $productId) {
 
             $product = Product::find($productId);
@@ -59,17 +57,13 @@ class ObatKeluarController extends Controller
                 }
             }
         }
-        // ============================
-        // END VALIDASI STOK
-        // ============================
-
 
         DB::transaction(function () use ($request) {
 
             // Create transaksi utama
             $obat_keluar = ObatKeluar::create([
                 'Id_User' => Auth::id(),
-                'Tanggal_Keluar' => now(),
+                'Tanggal_Keluar' => $request->Tanggal_Keluar ?? now(),
                 'Jenis_Keluar' => $request->Jenis_Keluar,
             ]);
 
@@ -158,13 +152,17 @@ class ObatKeluarController extends Controller
     {
         $start_date = $request->start_date;
         $end_date = $request->end_date;
+        $bulan = $request->bulan;
 
-        // Error jika hanya satu tanggal diisi
         if (($start_date && !$end_date) || (!$start_date && $end_date)) {
             return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
         }
 
         $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
+            ->when($bulan, function ($q) use ($bulan) {
+                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
+                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+            })
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
                 $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
             })
@@ -173,13 +171,16 @@ class ObatKeluarController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
             'obatKeluars' => $obatKeluars,
+            'bulan' => $bulan,
             'start_date' => $start_date,
             'end_date' => $end_date
         ])->setPaper('A4', 'portrait');
 
-        $filename = $start_date && $end_date
-            ? "Laporan_Obat_Keluar_{$start_date}_sd_{$end_date}.pdf"
-            : "Laporan_Obat_Keluar_Semua.pdf";
+        $filename = $bulan
+            ? "Laporan_Obat_Keluar_{$bulan}.pdf"
+            : ($start_date && $end_date
+                ? "Laporan_Obat_Keluar_{$start_date}_sd_{$end_date}.pdf"
+                : "Laporan_Obat_Keluar_Semua.pdf");
 
         return $pdf->download($filename);
     }

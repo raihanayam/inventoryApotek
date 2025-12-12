@@ -22,7 +22,9 @@
     <p>
         Tanggal Cetak: {{ now()->format('d/m/Y') }} <br>
         Periode Laporan:
-        @if(isset($start_date) && isset($end_date))
+        @if(isset($bulan) && $bulan)
+            {{ \Carbon\Carbon::parse($bulan.'-01')->format('F Y') }}
+        @elseif(isset($start_date) && isset($end_date))
             {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }}
             s/d
             {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}

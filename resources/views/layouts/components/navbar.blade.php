@@ -11,7 +11,7 @@
     <!-- Notifikasi -->
     <div class="nav-item dropdown ml-auto">
         <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-            🔔 Notifikasi
+             Notifikasi
             @php
                 $count = count($notifications['expired']) + count($notifications['stockOut']);
             @endphp

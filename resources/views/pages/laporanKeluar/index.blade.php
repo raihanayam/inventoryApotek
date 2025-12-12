@@ -40,7 +40,8 @@
 
             <form action="{{ route('obatKeluar.exportPDF') }}" method="GET" class="form-inline mb-3">
                 <label class="mr-2">Pilih Bulan</label>
-                <input type="month" name="bulan" class="form-control" value="{{ request('bulan') }}">
+                <input type="month" name="bulan" class="form-control" 
+                      value="{{ request('bulan') }}">
                 <button type="submit" class="btn btn-danger btn-sm ml-2">
                     <i class="fas fa-file-pdf"></i> Export PDF
                 </button>

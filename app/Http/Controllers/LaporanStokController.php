@@ -89,7 +89,7 @@ class LaporanStokController extends Controller
             $p->stok_sekarang = $p->total_masuk - $p->total_keluar;
         }
 
-        $pdf = Pdf::loadView('laporan.Stok', [
+        $pdf = Pdf::loadView('laporan.Produk', [
             'products' => $products,
         ])->setPaper('A4', 'portrait');
 
