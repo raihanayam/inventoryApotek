@@ -10,12 +10,18 @@ class LaporanKeluarController extends Controller
 {
     public function index(Request $request)
     {
-        $bulan = $request->bulan; // format: 2025-01
+        $bulan = $request->bulan; // format: 2025-01 atau 2025-1
 
         $obat_keluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($query) use ($bulan) {
-                $query->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                    ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+
+                // ========== FIX FORMAT BULAN ==========
+                $year = substr($bulan, 0, 4);
+                $month = (int) substr($bulan, 5); // aman untuk "01" atau "1"
+                // ======================================
+
+                $query->whereYear('Tanggal_Keluar', $year)
+                      ->whereMonth('Tanggal_Keluar', $month);
             })
             ->orderBy('created_at', 'ASC')
             ->paginate(7)
@@ -37,7 +43,7 @@ class LaporanKeluarController extends Controller
         $chart_values = [];
 
         for ($i = 1; $i <= 12; $i++) {
-            $chart_labels[] = date('M', mktime(0,0,0,$i,10));
+            $chart_labels[] = date('M', mktime(0, 0, 0, $i, 10));
             $chart_values[] = $chartRaw[$i] ?? 0;
         }
 
@@ -49,15 +55,22 @@ class LaporanKeluarController extends Controller
         ));
     }
 
-    public function exportPDF(Request $request) {
+    public function exportPDF(Request $request)
+    {
         $bulan = $request->bulan;
         $start_date = $request->start_date;
         $end_date = $request->end_date;
 
         $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($q) use ($bulan) {
-                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+
+                // ========== FIX FORMAT BULAN ==========
+                $year = substr($bulan, 0, 4);
+                $month = (int) substr($bulan, 5); // aman untuk "1" atau "01"
+                // ======================================
+
+                $q->whereYear('Tanggal_Keluar', $year)
+                  ->whereMonth('Tanggal_Keluar', $month);
             })
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
                 $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
