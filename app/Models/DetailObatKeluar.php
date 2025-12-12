@@ -9,7 +9,7 @@ class DetailObatKeluar extends Model
 {
     use HasFactory;
 
-    protected $table = 'detail_obat_keluar';
+    protected $table = 'detail_obat_keluars';
     protected $guarded = [];
 
     public function product()

@@ -9,7 +9,7 @@ class ObatKeluar extends Model
 {
     use HasFactory;
 
-    protected $table = 'obat_keluar';
+    protected $table = 'obat_keluars';
 
     protected $fillable = [
         'Id_Keluar',
