@@ -18,7 +18,7 @@ class DetailObatKeluar extends Model
 
     public function obatkeluar()
     {
-        return $this->belongsTo(ObatKeluar::class, 'id_keluar', 'id_keluar');
+        return $this->belongsTo(ObatKeluar::class, 'obat_keluar_id', 'id');
     }
 
     public function satuan()

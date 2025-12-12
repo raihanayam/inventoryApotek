@@ -10,28 +10,25 @@ class LaporanKeluarController extends Controller
 {
     public function index(Request $request)
     {
-        $bulan = $request->bulan;
+        $bulan = $request->bulan; // format: 2025-01
 
         $obat_keluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($query) use ($bulan) {
-                $query->whereYear('tanggal_keluar', substr($bulan, 0, 4))
-                      ->whereMonth('tanggal_keluar', substr($bulan, 5, 2));
+                $query->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
+                    ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
             })
-            ->orderBy('tanggal_keluar', 'ASC')
+            ->orderBy('created_at', 'ASC')
             ->paginate(7)
-            ->appends(['bulan' => $bulan]);
+            ->appends(['bulan' => $bulan]); // agar pagination tetap bawa filter
 
-        // Grafik
-        $currentYear = date('Y');
+        // ========== GRAFIK ==========
+        $currentYear = ObatKeluar::selectRaw('YEAR(Tanggal_Keluar) AS y')
+            ->orderBy('y', 'desc')
+            ->value('y') ?? date('Y');
 
-        $chartRaw = DetailObatKeluar::join(
-                'obat_keluars',
-                'detail_obat_keluar.id_keluar',
-                '=',
-                'obat_keluars.id_keluar'
-            )
-            ->selectRaw("MONTH(obat_keluars.tanggal_keluar) AS bulan, SUM(detail_obat_keluar.jumlah) AS total_keluar")
-            ->whereYear('obat_keluars.tanggal_keluar', $currentYear)
+        $chartRaw = DetailObatKeluar::join('obat_keluars', 'detail_obat_keluars.obat_keluar_id', '=', 'obat_keluars.id')
+            ->selectRaw("MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluars.Jumlah) AS total_keluar")
+            ->whereYear('obat_keluars.Tanggal_Keluar', $currentYear)
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->pluck('total_keluar', 'bulan');
@@ -44,7 +41,7 @@ class LaporanKeluarController extends Controller
             $chart_values[] = $chartRaw[$i] ?? 0;
         }
 
-        return view('pages.laporankeluar.index', compact(
+        return view('pages.laporanKeluar.index', compact(
             'obat_keluars',
             'chart_labels',
             'chart_values',
@@ -52,30 +49,29 @@ class LaporanKeluarController extends Controller
         ));
     }
 
-    public function exportPDF(Request $request)
-    {
+    public function exportPDF(Request $request) {
         $bulan = $request->bulan;
         $start_date = $request->start_date;
         $end_date = $request->end_date;
 
         $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($q) use ($bulan) {
-                $q->whereYear('tanggal_keluar', substr($bulan, 0, 4))
-                  ->whereMonth('tanggal_keluar', substr($bulan, 5, 2));
+                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
+                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
             })
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('tanggal_keluar', [$start_date, $end_date]);
+                $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
             })
-            ->orderBy('tanggal_keluar', 'ASC')
+            ->orderBy('Tanggal_Keluar', 'ASC')
             ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatkeluar', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
             'obatKeluars' => $obatKeluars,
             'bulan' => $bulan,
             'start_date' => $start_date,
             'end_date' => $end_date
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download('Laporan_ObatKeluar.pdf');
+        return $pdf->download('Laporan_Obat_Keluar.pdf');
     }
 }
