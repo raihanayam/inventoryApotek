@@ -10,24 +10,30 @@ class LaporanKeluarController extends Controller
 {
     public function index(Request $request)
     {
-        $bulan = $request->bulan; // format: 2025-01
+        $bulan = $request->bulan;
 
         $obat_keluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($query) use ($bulan) {
                 $query->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                    ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+                      ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
             })
-            ->orderBy('created_at', 'ASC')
+            ->orderBy('Tanggal_Keluar', 'ASC')
             ->paginate(7)
-            ->appends(['bulan' => $bulan]); // agar pagination tetap bawa filter
+            ->appends(['bulan' => $bulan]);
 
-        // ========== GRAFIK ==========
+
+        // ======== GRAFIK (PERBAIKAN PENTING) ==========
         $currentYear = ObatKeluar::selectRaw('YEAR(Tanggal_Keluar) AS y')
             ->orderBy('y', 'desc')
             ->value('y') ?? date('Y');
 
-        $chartRaw = DetailObatKeluar::join('obat_keluars', 'detail_obat_keluars.obat_keluar_id', '=', 'obat_keluars.id')
-            ->selectRaw("MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluars.Jumlah) AS total_keluar")
+        $chartRaw = DetailObatKeluar::join(
+                'obat_keluars',
+                'detail_obat_keluar.Id_Keluar',
+                '=',
+                'obat_keluars.Id_Keluar'
+            )
+            ->selectRaw("MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluar.Jumlah) AS total_keluar")
             ->whereYear('obat_keluars.Tanggal_Keluar', $currentYear)
             ->groupBy('bulan')
             ->orderBy('bulan')
@@ -57,7 +63,7 @@ class LaporanKeluarController extends Controller
         $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
             ->when($bulan, function ($q) use ($bulan) {
                 $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
+                  ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
             })
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
                 $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
