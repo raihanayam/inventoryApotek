@@ -30,22 +30,11 @@
 
         <div class="card">
           <div class="card-header d-flex justify-content-end">
-            <form action="/laporanKeluar" method="GET" class="form-inline mb-3">
-                <label class="mr-2">Pilih Bulan</label>
-                <input type="month" name="bulan" class="form-control" value="{{ request('bulan') }}">
-                <button type="submit" class="btn btn-primary btn-sm ml-2 mr-2">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-            </form>
-
             <form action="{{ route('obatKeluar.exportPDF') }}" method="GET" class="form-inline mb-3">
-                <label class="mr-2">Pilih Bulan</label>
-                <input type="month" name="bulan" class="form-control" 
-                      value="{{ request('bulan') }}">
-                <button type="submit" class="btn btn-danger btn-sm ml-2">
-                    <i class="fas fa-file-pdf"></i> Export PDF
-                </button>
-            </form>
+                        <button type="submit" class="btn btn-danger btn-sm ml-2">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                    </form>
           </div>
 
           <div class="card-body">

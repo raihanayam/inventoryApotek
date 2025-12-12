@@ -153,44 +153,25 @@ class ObatKeluarController extends Controller
         return redirect('/keluar')->with('success', 'Data obat keluar berhasil dihapus.');
     }
     
-    public function exportPDF(Request $request)
+    public function exportPDF()
     {
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-        $bulan = $request->bulan;
-
-        if (($start_date && !$end_date) || (!$start_date && $end_date)) {
-            return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
-        }
-
+        // Ambil semua data obat keluar lengkap dengan relasinya
         $obatKeluars = ObatKeluar::with([
-                'user',
-                'detail_obat_keluar',
-                'detail_obat_keluar.product',
-                'detail_obat_keluar.satuan'
-            ])
-            ->when($bulan, function ($q) use ($bulan) {
-                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
-            })
-            ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
-            })
-            ->orderBy('Tanggal_Keluar', 'ASC')
-            ->get();
+            'user',
+            'detail_obat_keluar',
+            'detail_obat_keluar.product',
+            'detail_obat_keluar.satuan'
+        ])
+        ->orderBy('Tanggal_Keluar', 'ASC')
+        ->get();
 
+        // Generate PDF
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
-            'obatKeluars' => $obatKeluars,
-            'bulan' => $bulan,
-            'start_date' => $start_date,
-            'end_date' => $end_date
+            'obatKeluars' => $obatKeluars
         ])->setPaper('A4', 'portrait');
 
-        $filename = $bulan
-            ? "Laporan_Obat_Keluar_{$bulan}.pdf"
-            : ($start_date && $end_date
-                ? "Laporan_Obat_Keluar_{$start_date}_sd_{$end_date}.pdf"
-                : "Laporan_Obat_Keluar_Semua.pdf");
+        // Nama file
+        $filename = "Laporan_Obat_Keluar_Semua.pdf";
 
         return $pdf->download($filename);
     }
