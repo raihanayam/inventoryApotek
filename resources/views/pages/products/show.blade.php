@@ -45,28 +45,35 @@
                         <td>Rp {{ number_format($hargaBeli, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <th>Stok Saat Ini</th>
+                        <th>Stok</th>
                         <td>{{ $stokSekarang }}</td>
                     </tr>
                     <tr>
-                        <th>Batch (Harga Beli & Expired)</th>
+                        <th>Histori Batch Obat Masuk</th>
                         <td>
+                            <small class="text-warning d-block mb-2">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Data ini merupakan histori obat masuk dan tidak mempengaruhi perhitungan stok saat ini
+                            </small>
+
                             <table class="table table-sm table-bordered mt-2">
                                 <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>Harga Beli</th>
-                                        <th>Jumlah</th>
+                                        <th>Jumlah Masuk</th>
                                         <th>Tanggal Kadaluwarsa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if ($product->detail_obat_masuk->isEmpty())
+                                    @if ($batchHistories->isEmpty())
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted">Belum ada batch obat masuk.</td>
+                                            <td colspan="4" class="text-center text-muted">
+                                                Belum ada data obat masuk
+                                            </td>
                                         </tr>
                                     @else
-                                        @foreach ($product->detail_obat_masuk as $batch)
+                                        @foreach ($batchHistories as $batch)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>Rp {{ number_format($batch->Harga_Beli, 0, ',', '.') }}</td>

@@ -22,23 +22,32 @@
         {{-- @if ($errors->any())
             @dd($errors->all())
         @endif --}}
-        <form action="/satuans/{{ $category->id }}" method="POST">
+        <form action="/satuans/{{ $satuan->id }}" method="POST">
             @csrf
             @method('PUT')
+
             <div class="card">
                 <div class="card-body">
                     <div class="form-group">
                         <label for="name" class="form-label">Nama Satuan</label>
-                        <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $category->name) }}">
+
+                        <input 
+                            type="text" 
+                            name="name" 
+                            id="name" 
+                            class="form-control @error('name') is-invalid @enderror"
+                            value="{{ old('name', $satuan->name) }}"
+                        >
+
                         @error('name')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
+
                 <div class="card-footer">
                     <div class="d-flex justify-content-end">
-                        <a href="/satuans" class="btn btn-sm btn-outline-secondary mr-2">Batal</a>
-                        <button type="submit" class="btn btn-sm btn-warning">Simpan</button>
+                        <button class="btn btn-primary">Simpan</button>
                     </div>
                 </div>
             </div>

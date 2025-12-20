@@ -13,6 +13,26 @@
   <link rel="stylesheet" href="{{ asset('templates/plugins/icheck-bootstrap/icheck-bootstrap.min.css')}}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{{ asset('templates/dist/css/adminlte.min.css')}}">
+  <style>
+    /* =====================================================
+       GANTI WARNA BACKGROUND DI SINI
+       ===================================================== */
+
+    body.login-page {
+        background-color: whitesmoke; /* <<< GANTI WARNA DI SINI */
+    }
+
+    .login-card-body {
+        background-color: white; /* <<< GANTI WARNA DI SINI */
+    }
+
+    /* Contoh warna lain:
+       #f9fafb  -> lebih putih
+       #eef2ff  -> pastel biru
+       #e5e7eb  -> abu-abu muda
+       #1f2937; /* dark */
+    */
+  </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">

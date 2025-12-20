@@ -32,7 +32,7 @@
                                 <th>Nama Obat</th>
                                 <th>Kategori</th>
                                 <th>Satuan</th>
-                                <th>Stok</th>
+                                <th>Stok Saat Ini</th>
                                 <th>Tanggal Kadaluwarsa</th>
                                 <th>Aksi</th>
                             </tr>

@@ -15,20 +15,18 @@ class ObatKeluarController extends Controller
     public function index()
     {
         $obat_keluars = ObatKeluar::with([
-                                'user',
-                                'detail_obat_keluar',
-                                'detail_obat_keluar.product',
-                                'detail_obat_keluar.satuan'
-                            ])
-                            ->orderBy('Tanggal_Keluar', 'ASC')
-                            ->paginate(7);
+            'user',
+            'detail_obat_keluar.product.satuan'
+        ])
+        ->orderBy('Tanggal_Keluar', 'ASC')
+        ->paginate(7);
 
         return view('pages.ObatKeluar.index', compact('obat_keluars'));
     }
 
     public function create()
     {
-        $products = Product::all();
+        $products = Product::where('stock', '>', 0)->get();
         $user = Auth::user();
 
         return view('pages.ObatKeluar.create', compact('user', 'products'));
@@ -36,88 +34,93 @@ class ObatKeluarController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'Jenis_Keluar' => 'required|string',
-            'product_id' => 'required|array|min:1',
-            'product_id.*' => 'required|exists:products,id',
-            'Jumlah' => 'required|array',
-            'Jumlah.*' => 'required|numeric|min:1',
+        $request->validate([
+            'Jenis_Keluar'      => 'required|string',
+            'Tanggal_Keluar'    => 'nullable|date',
+            'product_id'        => 'required|array|min:1',
+            'product_id.*'      => 'required|exists:products,id',
+            'Jumlah'            => 'required|array',
+            'Jumlah.*'          => 'required|numeric|min:1',
         ]);
-
-        // validasi stok
-        foreach ($request->product_id as $index => $productId) {
-
-            $product = Product::find($productId);
-            $jumlah = $request->Jumlah[$index];
-
-            // Untuk jenis keluar biasa
-            if ($request->Jenis_Keluar !== "Kadaluarsa") {
-
-                $totalStok = $product->detail_obat_masuk()->sum('Jumlah');
-
-                if ($jumlah > $totalStok) {
-                    throw ValidationException::withMessages([
-                        'Jumlah' => "Stok untuk {$product->name} tidak mencukupi! (Stok tersedia: {$totalStok})"
-                    ]);
-                }
-            }
-        }
 
         DB::transaction(function () use ($request) {
 
-            // Create transaksi utama
             $obat_keluar = ObatKeluar::create([
-                'Id_User' => Auth::id(),
+                'Id_User'        => Auth::id(),
                 'Tanggal_Keluar' => $request->Tanggal_Keluar ?? now(),
-                'Jenis_Keluar' => $request->Jenis_Keluar,
+                'Jenis_Keluar'   => $request->Jenis_Keluar,
             ]);
 
-            // Generate ID Keluar
             $obat_keluar->Id_Keluar = 'K' . str_pad($obat_keluar->id, 3, '0', STR_PAD_LEFT);
             $obat_keluar->save();
 
-            // Iterasi detail
-            foreach ($request->product_id as $index => $productId) {
+            foreach ($request->product_id as $i => $productId) {
 
-                $jumlah = $request->Jumlah[$index];
-                $product = Product::find($productId);
+                $jumlahKeluar = $request->Jumlah[$i];
+                $product = Product::findOrFail($productId);
 
-                // Jika jenis keluar KADALUARSA → auto ambil batch expired
-                if ($request->Jenis_Keluar == "Kadaluarsa") {
+                /** QUERY BATCH (FEFO) */
+                $batchQuery = $product->detail_obat_masuk()
+                    ->where('Jumlah', '>', 0);
 
-                    $expiredBatch = $product->detail_obat_masuk()
-                        ->where('Tanggal_Kadaluwarsa', '<', now())
-                        ->orderBy('Tanggal_Kadaluwarsa', 'asc')
-                        ->first();
-
-                    if ($expiredBatch) {
-
-                        $jumlah = $expiredBatch->Jumlah;
-
-                        // Hapus batch kadaluarsa
-                        $expiredBatch->delete();
-                    }
+                // KHUSUS KADALUARSA → AMBIL YANG SUDAH EXPIRED SAJA
+                if ($request->Jenis_Keluar === 'Kadaluarsa') {
+                    $batchQuery->whereDate('Tanggal_Kadaluwarsa', '<', now());
                 }
 
-                // Insert detail
+                $batches = $batchQuery
+                    ->orderBy('Tanggal_Kadaluwarsa', 'ASC')
+                    ->get();
+
+                /** VALIDASI KADALUARSA */
+                if ($request->Jenis_Keluar === 'Kadaluarsa' && $batches->isEmpty()) {
+                    throw ValidationException::withMessages([
+                        'Jenis_Keluar' => 'Tidak ada stok obat yang sudah kadaluarsa.'
+                    ]);
+                }
+
+                /** HITUNG TOTAL STOK VALID */
+                $stokValid = $batches->sum('Jumlah');
+                if ($jumlahKeluar > $stokValid) {
+                    throw ValidationException::withMessages([
+                        'Jumlah' => "Stok {$product->name} tidak mencukupi."
+                    ]);
+                }
+
+                /** FEFO PENGURANGAN BATCH */
+                $sisa = $jumlahKeluar;
+
+                foreach ($batches as $batch) {
+                    if ($sisa <= 0) break;
+
+                    if ($batch->Jumlah <= $sisa) {
+                        $sisa -= $batch->Jumlah;
+                        $batch->Jumlah = 0;
+                    } else {
+                        $batch->Jumlah -= $sisa;
+                        $sisa = 0;
+                    }
+
+                    $batch->save();
+                }
+
+                /** SIMPAN DETAIL KELUAR */
                 $detail = DetailObatKeluar::create([
                     'obat_keluar_id' => $obat_keluar->id,
                     'product_id'     => $productId,
-                    'Jumlah'         => $jumlah,
+                    'Jumlah'         => $jumlahKeluar,
                 ]);
 
-                // Generate ID detail
                 $detail->Id_Detail_Keluar = 'DK' . str_pad($detail->id, 3, '0', STR_PAD_LEFT);
                 $detail->save();
 
-                // Hapus batch yang sudah habis
-                $product->detail_obat_masuk()->where('Jumlah', 0)->delete();
+                /** UPDATE STOK PRODUK (REAL) */
+                $product->stock -= $jumlahKeluar;
 
-                // Hitung total stok berdasarkan batch
-                $totalStok = $product->detail_obat_masuk()->sum('Jumlah');
+                if ($product->stock < 0) {
+                    $product->stock = 0;
+                }
 
-                // Update stok di tabel products
-                $product->stock = $totalStok;
                 $product->save();
             }
         });
@@ -127,8 +130,10 @@ class ObatKeluarController extends Controller
 
     public function show($id)
     {
-        $obat_keluar = ObatKeluar::with(['user', 'detail_obat_keluar.product'])
-                        ->findOrFail($id);
+        $obat_keluar = ObatKeluar::with([
+            'user',
+            'detail_obat_keluar.product.satuan'
+        ])->findOrFail($id);
 
         return view('pages.ObatKeluar.show', compact('obat_keluar'));
     }
@@ -137,15 +142,14 @@ class ObatKeluarController extends Controller
     {
         $obat_keluar = ObatKeluar::with('detail_obat_keluar')->findOrFail($id);
 
-        // Kembalikan stok
+        // NOTE: untuk TA → stok dikembalikan tanpa batch asal
         foreach ($obat_keluar->detail_obat_keluar as $detail) {
-        $product = Product::find($detail->product_id);
-
-        if ($product) {
-            $product->stock += $detail->jumlah; 
-            $product->save();
+            $product = Product::find($detail->product_id);
+            if ($product) {
+                $product->stock += $detail->Jumlah;
+                $product->save();
+            }
         }
-    }
 
         $obat_keluar->detail_obat_keluar()->delete();
         $obat_keluar->delete();
@@ -165,7 +169,6 @@ class ObatKeluarController extends Controller
         $obatKeluars = ObatKeluar::with([
             'user',
             'detail_obat_keluar',
-            'detail_obat_keluar.product',
             'detail_obat_keluar.product.satuan'
         ])
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {

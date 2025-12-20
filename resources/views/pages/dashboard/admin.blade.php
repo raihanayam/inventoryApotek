@@ -1,6 +1,12 @@
 @extends('layouts.main')
 
 
+<style>
+  .small-box.bg-warning .inner,
+  .small-box.bg-warning .small-box-footer {
+      color: #fff !important;
+  }
+</style>
 
 @section('header')
     <div class="row mb-2">

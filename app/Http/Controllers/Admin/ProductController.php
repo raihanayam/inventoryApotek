@@ -13,15 +13,32 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductController extends Controller
 {
-    public function index() {
-        $products = Product::with(['category', 'satuan', 'detail_obat_masuk', 'detail_obat_keluar'])->paginate(7);
+    public function index()
+    {
+        $products = Product::with([
+            'category',
+            'satuan',
+            'detail_obat_masuk',
+            'detail_obat_keluar'
+        ])->paginate(7);
+
         $notifications = $this->getNotifications();
 
-        // hitung stok tiap produk
         foreach ($products as $p) {
-            $totalMasuk = $p->detail_obat_masuk->sum('Jumlah');
+
+            // TOTAL MASUK (VALID)
+            $totalMasuk = $p->detail_obat_masuk
+                ->whereNotNull('obat_masuk_id') // pastikan relasi valid
+                ->sum('Jumlah');
+
+            // TOTAL KELUAR
             $totalKeluar = $p->detail_obat_keluar->sum('Jumlah');
-            $p->stokSekarang = $totalMasuk - $totalKeluar;
+
+            // STOK SEKARANG
+            $stok = $totalMasuk - $totalKeluar;
+
+            // cegah stok minus (penting!)
+            $p->stokSekarang = $stok > 0 ? $stok : 0;
         }
 
         return view('pages.products.index', compact('products', 'notifications'));
@@ -63,24 +80,30 @@ class ProductController extends Controller
         return view('pages.products.edit', compact('product', 'categories', 'satuans'));
     }
 
-    public function show($id){
-        $product = Product::findOrFail($id);
+    public function show($id)
+    {
+        $product = Product::with([
+            'detail_obat_masuk' => function ($q) {
+                $q->orderBy('Tanggal_Kadaluwarsa', 'ASC');
+            },
+            'detail_obat_keluar',
+            'category',
+            'satuan'
+        ])->findOrFail($id);
 
-        // Harga beli terakhir
-        $latestPurchase = $product->detail_obat_masuk()->latest()->first();
-        $hargaBeli = $latestPurchase->Harga_Beli ?? 0;
+        // STOK SAAT INI (SUMBER KEBENARAN)
+        $stokSekarang = $product->stock;
 
-        // Harga jual otomatis 10%
-        $hargaJual = $hargaBeli * 1.10;
+        // HARGA BELI TERAKHIR (dari histori obat masuk terakhir)
+        $latestBatch = $product->detail_obat_masuk->last();
+        $hargaBeli = $latestBatch->Harga_Beli ?? 0;
 
-        // Hitung stok dinamis
-        $totalMasuk = $product->detail_obat_masuk->sum('Jumlah');
-        $totalKeluar = $product->detail_obat_keluar->sum('Jumlah');
-        $stokSekarang = $totalMasuk - $totalKeluar;
+        // HISTORI BATCH (SEMUA OBAT MASUK)
+        $batchHistories = $product->detail_obat_masuk;
 
         return view('pages.products.show', compact(
             'product',
-            'hargaJual',
+            'batchHistories',
             'hargaBeli',
             'stokSekarang'
         ));

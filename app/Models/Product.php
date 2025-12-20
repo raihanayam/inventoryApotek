@@ -21,7 +21,7 @@ class Product extends Model
     }
 
     public function satuan() {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Satuan::class, 'satuan_id');
     }
 
     public function detail_obat_masuk() {

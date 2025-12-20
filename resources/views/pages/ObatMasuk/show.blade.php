@@ -26,19 +26,19 @@
                 <table class="table table-bordered">
                     <tr>
                         <th>ID Masuk</th>
-                        <td>{{ $obat_masuks->Id_Masuk }}</td>
+                        <td>{{ $obat_masuk->Id_Masuk }}</td>
                     </tr>
                     <tr>
                         <th>Nama User</th>
-                        <td>{{ $obat_masuks->user->name ?? '-' }}</td>
+                        <td>{{ $obat_masuk->user->name ?? '-' }}</td>
                     </tr>
                     <tr>
                         <th>Tanggal Masuk</th>
-                        <td>{{ \Carbon\Carbon::parse($obat_masuks->Tanggal_Masuk)->format('d-m-Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($obat_masuk->Tanggal_Masuk)->format('d-m-Y') }}</td>
                     </tr>
                     <tr>
                         <th>Total Harga</th>
-                        <td>Rp {{ number_format($obat_masuks->detail_obat_masuk->sum(fn($d) => $d->Jumlah * $d->Harga_Beli), 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($obat_masuk->detail_obat_masuk->sum(fn($d) => $d->Jumlah * $d->Harga_Beli), 0, ',', '.') }}</td>
                     </tr>
                 </table>
             </div>
@@ -61,7 +61,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($obat_masuks->detail_obat_masuk as $detail)
+                        @foreach ($obat_masuk->detail_obat_masuk as $detail)
                             <tr>
                                 <td>{{ $detail->product->sku ?? '-' }}</td>
                                 <td>{{ $detail->product->name ?? '-' }}</td>
@@ -72,7 +72,7 @@
                             </tr>
                         @endforeach
 
-                        @if ($obat_masuks->detail_obat_masuk->isEmpty())
+                        @if ($obat_masuk->detail_obat_masuk->isEmpty())
                             <tr>
                                 <td colspan="7" class="text-center text-muted">Tidak ada detail obat untuk transaksi ini.</td>
                             </tr>

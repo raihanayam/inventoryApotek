@@ -16,13 +16,8 @@ class DetailObatMasuk extends Model
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }
 
-    public function obatmasuk()
+    public function obat_masuk()
     {
         return $this->belongsTo(ObatMasuk::class, 'obat_masuk_id', 'id');
-    }
-
-    public function satuan()
-    {
-        return $this->belongsTo(Satuan::class, 'satuan_id', 'id');
     }
 }
