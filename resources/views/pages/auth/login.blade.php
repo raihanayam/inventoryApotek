@@ -22,7 +22,6 @@
     .login-card-body {
         background-color: white;
     }
-    */
   </style>
 </head>
 <body class="hold-transition login-page">
