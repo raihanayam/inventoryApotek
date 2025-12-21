@@ -29,8 +29,6 @@ Route::middleware(IsLogin::class)->group(function() {
     Route::get('/laporan/keluar/export-pdf', [LaporanKeluarController::class, 'exportPDF'])->name('laporanKeluar.exportPDF');
     Route::get('/laporan/stok/export-pdf', [LaporanStokController::class, 'exportPDF'])->name('laporanStok.exportPDF');
 
-
-
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/create', [CategoryController::class, 'create']);
     Route::get('/categories/edit/{id}', [CategoryController::class, 'edit']);

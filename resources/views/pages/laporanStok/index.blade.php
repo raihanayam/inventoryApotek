@@ -31,11 +31,11 @@
 
         <div class="card">
             <div class="card-header d-flex justify-content-end">
-                <form action="{{ route('laporanStok.exportPDF') }}" method="GET" class="form-inline mb-3">
-                    <button type="submit" class="btn btn-danger btn-sm ml-2">
-                        <i class="fas fa-file-pdf"></i> Export PDF
-                    </button>
-                </form>
+                @if (Route::has('laporanStok.exportPDF'))
+                    <a href="{{ route('laporanStok.exportPDF') }}" class="btn btn-danger">
+                        Export PDF
+                    </a>
+                @endif
             </div>
 
             <div class="card-body">

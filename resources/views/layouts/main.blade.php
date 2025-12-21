@@ -14,19 +14,12 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="{{ asset('templates/dist/css/adminlte.min.css') }}">
   <style>
-    /* =====================================================
-       GANTI WARNA BACKGROUND DI SINI
-       ===================================================== */
+    
 
     .content-wrapper {
-        background-color: whitesmoke; /* <<< GANTI WARNA DI SINI */
+        background-color: whitesmoke;
     }
-
-    /* Contoh warna lain:
-       #f9fafb  -> lebih putih
-       #eef2ff  -> pastel biru
-       #e5e7eb  -> abu-abu muda
-       #1f2937; /* dark */
+    
     */
   </style>
 </head>
