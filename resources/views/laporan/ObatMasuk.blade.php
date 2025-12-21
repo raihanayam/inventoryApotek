@@ -55,15 +55,23 @@
 
                 <tr>
                     <td>{{ $no++ }}</td>
-                    <td>{{ \Carbon\Carbon::parse($detail->obat_masuk->Tanggal_Masuk)->format('d/m/Y') }}</td>
-                    <td>{{ $detail->obat_masuk->Id_Masuk }}</td>
+                    <td>
+                        {{ $detail->obat_masuk && $detail->obat_masuk->Tanggal_Masuk
+                            ? \Carbon\Carbon::parse($detail->obat_masuk->Tanggal_Masuk)->format('d/m/Y')
+                            : '-' }}
+                    </td>
+                    <td>{{ $detail->obat_masuk->Id_Masuk ?? '-' }}</td>
                     <td>{{ $detail->obat_masuk->user->name ?? '-' }}</td>
                     <td>{{ $detail->product->name ?? '-' }}</td>
                     <td>{{ $detail->product->satuan->name ?? '-' }}</td>
                     <td>{{ $detail->Jumlah }}</td>
                     <td class="right">{{ number_format($harga, 0, ',', '.') }}</td>
                     <td class="right">{{ number_format($subtotal, 0, ',', '.') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($detail->Tanggal_Kadaluwarsa)->format('d/m/Y') }}</td>
+                    <td>
+                        {{ $detail->Tanggal_Kadaluwarsa
+                            ? \Carbon\Carbon::parse($detail->Tanggal_Kadaluwarsa)->format('d/m/Y')
+                            : '-' }}
+                    </td>
                 </tr>
             @endforeach
 

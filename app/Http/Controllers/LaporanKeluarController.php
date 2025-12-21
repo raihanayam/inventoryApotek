@@ -70,6 +70,9 @@ class LaporanKeluarController extends Controller
 
     public function exportPDF()
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         $details = DetailObatKeluar::with([
             'product.satuan',
             'obat_keluar.user'

@@ -68,6 +68,9 @@ class LaporanMasukController extends Controller
 
     public function exportPDF()
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         $details = DetailObatMasuk::with([
             'product.satuan',
             'obat_masuk.user'
@@ -82,6 +85,6 @@ class LaporanMasukController extends Controller
             'details' => $details
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download("Laporan_Obat_Masuk.pdf");
+        return $pdf->download('Laporan_Obat_Masuk.pdf');
     }
 }
