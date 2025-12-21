@@ -148,21 +148,4 @@ class ProductController extends Controller
             'stockOut' => $stockOut,
         ];
     }
-
-    public function exportPDF()
-    {
-        $products = Product::with(['category', 'satuan'])->get();
-
-        foreach ($products as $p) {
-            $p->total_masuk = DetailObatMasuk::where('product_id', $p->id)->sum('Jumlah');
-            $p->total_keluar = DetailObatKeluar::where('product_id', $p->id)->sum('Jumlah');
-            $p->stok_sekarang = $p->total_masuk - $p->total_keluar;
-        }
-
-        $pdf = Pdf::loadView('laporan.Produk', [
-            'products' => $products,
-        ])->setPaper('A4', 'portrait');
-
-        return $pdf->download("Laporan_Stok_Semua.pdf");
-    }
 }

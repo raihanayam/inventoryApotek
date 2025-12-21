@@ -66,37 +66,22 @@ class LaporanMasukController extends Controller
         ));
     }
 
-    public function exportPDF(Request $request)
+    public function exportPDF()
     {
-        $start_date = $request->start_date;
-        $end_date   = $request->end_date;
-
-        if (($start_date && !$end_date) || (!$start_date && $end_date)) {
-            return back()->with('error', 'Harap isi tanggal awal dan akhir.');
-        }
-
         $details = DetailObatMasuk::with([
             'product.satuan',
             'obat_masuk.user'
         ])
-        ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-            $q->whereHas('obat_masuk', function ($sub) use ($start_date, $end_date) {
-                $sub->whereBetween('Tanggal_Masuk', [$start_date, $end_date]);
-            });
-        })
-        ->orderBy('created_at', 'ASC')
+        ->orderBy(
+            ObatMasuk::select('Tanggal_Masuk')
+                ->whereColumn('obat_masuks.id', 'detail_obat_masuks.obat_masuk_id')
+        )
         ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.ObatMasuk', [
-            'details' => $details,
-            'start_date' => $start_date,
-            'end_date' => $end_date
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatMasuk', [
+            'details' => $details
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download(
-            $start_date && $end_date
-                ? "Laporan_Obat_Masuk_{$start_date}_sd_{$end_date}.pdf"
-                : "Laporan_Obat_Masuk_Semua.pdf"
-        );
+        return $pdf->download("Laporan_Obat_Masuk.pdf");
     }
 }

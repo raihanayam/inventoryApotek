@@ -115,36 +115,4 @@ class ObatMasukController extends Controller
 
         return redirect('/masuk')->with('success', 'Data obat masuk berhasil dihapus.');
     }
-
-    public function exportPDF(Request $request)
-    {
-        $start_date = $request->start_date;
-        $end_date   = $request->end_date;
-
-        if (($start_date && !$end_date) || (!$start_date && $end_date)) {
-            return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
-        }
-
-        $obat_masuks = ObatMasuk::with([
-            'user',
-            'detail_obat_masuk.product.satuan'
-        ])
-        ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-            $q->whereBetween('Tanggal_Masuk', [$start_date, $end_date]);
-        })
-        ->orderBy('Tanggal_Masuk', 'ASC')
-        ->get();
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.ObatMasuk', [
-            'obat_masuks' => $obat_masuks,
-            'start_date' => $start_date,
-            'end_date'   => $end_date
-        ])->setPaper('A4', 'portrait');
-
-        return $pdf->download(
-            $start_date && $end_date
-                ? "Laporan_Obat_Masuk_{$start_date}_sd_{$end_date}.pdf"
-                : "Laporan_Obat_Masuk_Semua.pdf"
-        );
-    }
 }

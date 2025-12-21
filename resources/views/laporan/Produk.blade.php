@@ -43,52 +43,30 @@
             @php $no = 1; @endphp
 
             @foreach ($products as $p)
+            <tr>
+                <td>{{ $no++ }}</td>
+                <td>{{ $p->sku }}</td>
+                <td>{{ $p->name }}</td>
+                <td>{{ $p->category->name ?? '-' }}</td>
+                <td>{{ $p->satuan->name ?? '-' }}</td>
 
-                @php
-                    // harga beli terbaru dari batch terakhir
-                    $latestBatch = $p->detail_obat_masuk()->latest()->first();
-                    $hargaBeli = $latestBatch->Harga_Beli ?? 0;
+                <td class="right">
+                    {{ number_format($p->harga_beli, 0, ',', '.') }}
+                </td>
 
-                    // expired terdekat
-                    $expiredBatch = $p->detail_obat_masuk()
-                        ->orderBy('Tanggal_Kadaluwarsa', 'asc')
-                        ->first();
-                    $expiredDate = $expiredBatch->Tanggal_Kadaluwarsa ?? null;
+                <td class="right">{{ $p->total_masuk }}</td>
+                <td class="right">{{ $p->total_keluar }}</td>
 
-                    // total masuk
-                    $totalMasuk = $p->detail_obat_masuk()->sum('Jumlah');
+                <td class="right {{ $p->stok_sekarang <= 10 ? 'low-stock' : '' }}">
+                    {{ $p->stok_sekarang }}
+                </td>
 
-                    // total keluar
-                    $totalKeluar = $p->detail_obat_keluar()->sum('Jumlah');
-
-                    // stok saat ini
-                    $stokSekarang = $totalMasuk - $totalKeluar;
-
-                    // tanda obat hampir habis (≤ 10)
-                    $lowClass = $stokSekarang <= 10 ? 'low-stock' : '';
-                @endphp
-
-                <tr>
-                    <td>{{ $no++ }}</td>
-                    <td>{{ $p->sku }}</td>
-                    <td>{{ $p->name }}</td>
-                    <td>{{ $p->category->name ?? '-' }}</td>
-                    <td>{{ $p->satuan->name ?? '-' }}</td>
-
-                    <td class="right">{{ number_format($hargaBeli, 0, ',', '.') }}</td>
-
-                    <td class="right">{{ $totalMasuk }}</td>
-                    <td class="right">{{ $totalKeluar }}</td>
-
-                    <td class="right {{ $lowClass }}">
-                        {{ $stokSekarang }}
-                    </td>
-
-                    <td>
-                        {{ $expiredDate ? \Carbon\Carbon::parse($expiredDate)->format('d/m/Y') : '-' }}
-                    </td>
-                </tr>
-
+                <td>
+                    {{ $p->expired_terdekat
+                        ? \Carbon\Carbon::parse($p->expired_terdekat)->format('d/m/Y')
+                        : '-' }}
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>

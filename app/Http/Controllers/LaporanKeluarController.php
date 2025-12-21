@@ -68,27 +68,20 @@ class LaporanKeluarController extends Controller
         ));
     }
 
-    public function exportPDF(Request $request) {
-        $bulan = $request->bulan;
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-
-        $obatKeluars = ObatKeluar::with(['user', 'detail_obat_keluar.product.satuan'])
-            ->when($bulan, function ($q) use ($bulan) {
-                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
-            })
-            ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
-            })
-            ->orderBy('Tanggal_Keluar', 'ASC')
-            ->get();
+    public function exportPDF()
+    {
+        $details = DetailObatKeluar::with([
+            'product.satuan',
+            'obat_keluar.user'
+        ])
+        ->orderBy(
+            ObatKeluar::select('Tanggal_Keluar')
+                ->whereColumn('obat_keluars.id', 'detail_obat_keluars.obat_keluar_id')
+        )
+        ->get();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
-            'obatKeluars' => $obatKeluars,
-            'bulan' => $bulan,
-            'start_date' => $start_date,
-            'end_date' => $end_date
+            'details' => $details
         ])->setPaper('A4', 'portrait');
 
         return $pdf->download('Laporan_Obat_Keluar.pdf');

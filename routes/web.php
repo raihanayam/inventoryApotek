@@ -25,6 +25,12 @@ Route::middleware(IsLogin::class)->group(function() {
     Route::get('/masuk/export-pdf', [ObatMasukController::class, 'exportPDF'])->name('obatMasuk.exportPDF');
     Route::get('/keluar/export-pdf', [ObatKeluarController::class, 'exportPDF'])->name('obatKeluar.exportPDF');
 
+    Route::get('/laporan/masuk/export-pdf', [LaporanMasukController::class, 'exportPDF'])->name('laporanMasuk.exportPDF');
+    Route::get('/laporan/keluar/export-pdf', [LaporanKeluarController::class, 'exportPDF'])->name('laporanKeluar.exportPDF');
+    Route::get('/laporan/stok/export-pdf', [LaporanStokController::class, 'exportPDF'])->name('laporanStok.exportPDF');
+
+
+
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/create', [CategoryController::class, 'create']);
     Route::get('/categories/edit/{id}', [CategoryController::class, 'edit']);

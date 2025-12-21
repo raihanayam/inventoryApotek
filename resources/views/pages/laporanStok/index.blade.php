@@ -29,20 +29,15 @@
             </div>
         </div>
 
-        {{-- EXPORT SAJA --}}
         <div class="card">
             <div class="card-header d-flex justify-content-end">
-
-                {{-- EXPORT PDF TANPA FILTER --}}
-                <form action="{{ route('products.exportPDF') }}" method="GET" class="form-inline mb-3">
+                <form action="{{ route('laporanStok.exportPDF') }}" method="GET" class="form-inline mb-3">
                     <button type="submit" class="btn btn-danger btn-sm ml-2">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
                 </form>
-
             </div>
 
-            {{-- TABEL --}}
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>

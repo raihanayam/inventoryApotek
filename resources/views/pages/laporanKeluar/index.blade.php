@@ -31,7 +31,7 @@
         {{-- Tabel --}}
         <div class="card">
           <div class="card-header text-right">
-              <form action="{{ route('obatKeluar.exportPDF') }}" method="GET">
+              <form action="{{ route('laporanKeluar.exportPDF') }}" method="GET">
                   <button type="submit" class="btn btn-danger btn-sm">
                       <i class="fas fa-file-pdf"></i> Export PDF
                   </button>

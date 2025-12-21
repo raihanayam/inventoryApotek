@@ -10,67 +10,51 @@
         th { background-color: #f2f2f2; }
         h2, h3 { margin: 0; padding: 0; }
         p { margin-top: 6px; font-size: 11px; }
-        .right { text-align: right; }
-        .total { font-weight: bold; background-color: #f9f9f9; }
     </style>
 </head>
 <body>
 
-    <h2>Apotek Asy-Syifa Prambanan</h2>
-    <h3 style="text-align: center;">Laporan Obat Keluar</h3>
+<h2>Apotek Asy-Syifa Prambanan</h2>
+<h3 style="text-align: center;">Laporan Obat Keluar</h3>
 
-    <p>
-        Tanggal Cetak: {{ now()->format('d/m/Y') }} <br>
-        Periode Laporan:
-        @if(isset($bulan) && $bulan)
-            {{ \Carbon\Carbon::parse($bulan.'-01')->format('F Y') }}
-        @elseif(isset($start_date) && isset($end_date))
-            {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }}
-            s/d
-            {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}
-        @else
-            Semua Periode
-        @endif
-    </p>
+<p>
+    Tanggal Cetak: {{ now()->format('d/m/Y') }} <br>
+    Periode Laporan: <b>Semua Data</b>
+</p>
 
-    <table>
-        <thead>
+<table>
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Tanggal Keluar</th>
+            <th>ID Keluar</th>
+            <th>Jenis Keluar</th>
+            <th>Nama User</th>
+            <th>Nama Obat</th>
+            <th>Satuan</th>
+            <th>Jumlah</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach ($details as $no => $detail)
             <tr>
-                <th>No</th>
-                <th>Tanggal Keluar</th>
-                <th>ID Keluar</th>
-                <th>Nama User</th>
-                <th>Nama Obat</th>
-                <th>Jumlah</th>
-                <th>Jenis Keluar</th>
+                <td>{{ $no + 1 }}</td>
+                <td>{{ \Carbon\Carbon::parse($detail->obat_keluar->Tanggal_Keluar)->format('d/m/Y') }}</td>
+                <td>{{ $detail->obat_keluar->Id_Keluar }}</td>
+                <td>{{ $detail->obat_keluar->Jenis_Keluar }}</td>
+                <td>{{ $detail->obat_keluar->user->name ?? '-' }}</td>
+                <td>{{ $detail->product->name ?? '-' }}</td>
+                <td>{{ $detail->product->satuan->name ?? '-' }}</td>
+                <td>{{ $detail->Jumlah }}</td>
             </tr>
-        </thead>
+        @endforeach
+    </tbody>
+</table>
 
-        <tbody>
-            @php 
-                $no = 1;
-            @endphp
-
-            @foreach ($obatKeluars as $keluar)
-                @foreach ($keluar->detail_obat_keluar as $detail)
-                    <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>{{ \Carbon\Carbon::parse($keluar->Tanggal_Keluar)->format('d/m/Y') }}</td>
-                        <td>{{ $keluar->Id_Keluar }}</td>
-                        <td>{{ $keluar->user->name ?? '-' }}</td>
-                        <td>{{ $detail->product->name ?? '-' }}</td>
-                        <td>{{ $detail->Jumlah }}</td>
-                        <td>{{ $keluar->Jenis_Keluar }}</td>
-                    </tr>
-                @endforeach
-            @endforeach
-        </tbody>
-    </table>
-
-    <br>
-    <p style="text-align: right; font-style: italic;">
-        Dicetak otomatis oleh Sistem Inventory Apotek
-    </p>
+<p style="text-align: right; font-style: italic;">
+    Dicetak otomatis oleh Sistem Inventory Apotek
+</p>
 
 </body>
 </html>

@@ -77,16 +77,38 @@ class LaporanStokController extends Controller
 
     public function exportPDF()
     {
-        $products = Product::with(['category', 'satuan'])->get();
+        $products = Product::with([
+            'category',
+            'satuan',
+            'detail_obat_masuk',
+            'detail_obat_keluar'
+        ])->get();
 
         foreach ($products as $p) {
-            $p->total_masuk = DetailObatMasuk::where('product_id', $p->id)
-                ->sum('Jumlah');
 
-            $p->total_keluar = DetailObatKeluar::where('product_id', $p->id)
-                ->sum('Jumlah');
+            // TOTAL MASUK
+            $p->total_masuk = $p->detail_obat_masuk->sum('Jumlah');
 
-            $p->stok_sekarang = $p->total_masuk - $p->total_keluar;
+            // TOTAL KELUAR
+            $p->total_keluar = $p->detail_obat_keluar->sum('Jumlah');
+
+            // STOK SAAT INI (AMAN, TIDAK MINUS)
+            $p->stok_sekarang = max($p->total_masuk - $p->total_keluar, 0);
+
+            // HARGA BELI TERBARU (OBAT MASUK TERAKHIR)
+            $latestBatch = $p->detail_obat_masuk
+                ->sortByDesc('Tanggal_Masuk')
+                ->first();
+
+            $p->harga_beli = $latestBatch->Harga_Beli ?? 0;
+
+            // EXPIRED TERDEKAT (YANG MASIH ADA STOK)
+            $expiredBatch = $p->detail_obat_masuk
+                ->where('Jumlah', '>', 0)
+                ->sortBy('Tanggal_Kadaluwarsa')
+                ->first();
+
+            $p->expired_terdekat = $expiredBatch->Tanggal_Kadaluwarsa ?? null;
         }
 
         $pdf = Pdf::loadView('laporan.Produk', [

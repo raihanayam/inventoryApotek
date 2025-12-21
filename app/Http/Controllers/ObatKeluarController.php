@@ -156,37 +156,4 @@ class ObatKeluarController extends Controller
 
         return redirect('/keluar')->with('success', 'Data obat keluar berhasil dihapus.');
     }
-    
-    public function exportPDF(Request $request)
-    {
-        $start_date = $request->start_date;
-        $end_date   = $request->end_date;
-
-        if (($start_date && !$end_date) || (!$start_date && $end_date)) {
-            return back()->with('error', 'Harap isi tanggal awal dan tanggal akhir.');
-        }
-
-        $obatKeluars = ObatKeluar::with([
-            'user',
-            'detail_obat_keluar',
-            'detail_obat_keluar.product.satuan'
-        ])
-            ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('Tanggal_Keluar', [$start_date, $end_date]);
-            })
-            ->orderBy('Tanggal_Keluar', 'ASC')
-            ->get();
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
-            'obatKeluars' => $obatKeluars,
-            'start_date' => $start_date,
-            'end_date' => $end_date
-        ])->setPaper('A4', 'portrait');
-
-        $filename = ($start_date && $end_date)
-            ? "Laporan_Obat_Keluar_{$start_date}_sd_{$end_date}.pdf"
-            : "Laporan_Obat_Keluar_Semua.pdf";
-
-        return $pdf->download($filename);
-    }
 }
