@@ -19,8 +19,6 @@
     .content-wrapper {
         background-color: whitesmoke;
     }
-    
-    */
   </style>
 </head>
 <body class="hold-transition sidebar-mini">
