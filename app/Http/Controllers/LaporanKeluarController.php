@@ -68,7 +68,7 @@ class LaporanKeluarController extends Controller
             )
             ->get();
 
-        $pdf = PDF::loadView('laporan.obatKeluar', compact('details'))
+        $pdf = PDF::loadView('laporan.ObatKeluar', compact('details'))
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'isHtml5ParserEnabled' => true,

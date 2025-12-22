@@ -61,7 +61,7 @@ class LaporanMasukController extends Controller
                 ->whereHas('obat_masuk')
                 ->get();
 
-            $pdf = Pdf::loadView('laporan.obatMasuk', compact('details'))
+            $pdf = Pdf::loadView('laporan.ObatMasuk', compact('details'))
                 ->setPaper('A4', 'portrait')
                 ->setOptions([
                     'isHtml5ParserEnabled' => true,
