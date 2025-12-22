@@ -53,29 +53,30 @@ class LaporanMasukController extends Controller
 
     public function exportPDF()
     {
-        // 🔒 Tambahan supaya hosting kuat
-        ini_set('max_execution_time', 300);
-        ini_set('memory_limit', '512M');
+        try {
+            ini_set('max_execution_time', 300);
+            ini_set('memory_limit', '512M');
 
-        $details = DetailObatMasuk::with([
-                'product.satuan',
-                'obat_masuk.user'
-            ])
-            ->whereHas('obat_masuk')
-            ->orderBy(
-                ObatMasuk::select('Tanggal_Masuk')
-                    ->whereColumn('obat_masuks.id', 'detail_obat_masuks.obat_masuk_id')
-            )
-            ->get();
+            $details = DetailObatMasuk::with(['product.satuan','obat_masuk.user'])
+                ->whereHas('obat_masuk')
+                ->get();
 
-        $pdf = Pdf::loadView('laporan.obatMasuk', compact('details'))
-            ->setPaper('A4', 'portrait')
-            ->setOptions([
-                'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
-                'defaultFont' => 'dejavu sans',
-            ]);
+            $pdf = Pdf::loadView('laporan.obatMasuk', compact('details'))
+                ->setPaper('A4', 'portrait')
+                ->setOptions([
+                    'isHtml5ParserEnabled' => true,
+                    'isRemoteEnabled' => false,
+                    'defaultFont' => 'DejaVu Sans',
+                ]);
 
-        return $pdf->download('Laporan_Obat_Masuk.pdf');
+            return $pdf->download('Laporan_Obat_Masuk.pdf');
+        } catch (\Throwable $e) {
+            // untuk debugging (sementara)
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine(),
+            ], 500);
+        }
     }
 }
