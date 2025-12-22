@@ -99,6 +99,10 @@ new Chart(ctx, {
         datasets: [{
             label: 'Total Obat Keluar',
             data: {!! json_encode($chart_values) !!},
+            // borderColor: 'rgba(220, 53, 69, 1)',      
+            // backgroundColor: 'rgba(220, 53, 69, 0.2)',
+            // pointBackgroundColor: 'rgba(220, 53, 69, 1)',
+            // pointBorderColor: '#fff',
             borderWidth: 2,
             tension: 0.3,
             fill: true
