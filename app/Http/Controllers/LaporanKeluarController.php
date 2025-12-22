@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DetailObatKeluar;
 use App\Models\ObatKeluar;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\Facade\PDF as PDF;
 
 class LaporanKeluarController extends Controller
 {
@@ -61,6 +61,7 @@ class LaporanKeluarController extends Controller
                 'product.satuan',
                 'obat_keluar.user'
             ])
+            ->limit(50)->get()
             ->whereHas('obat_keluar')
             ->orderBy(
                 ObatKeluar::select('Tanggal_Keluar')
@@ -68,7 +69,7 @@ class LaporanKeluarController extends Controller
             )
             ->get();
 
-        $pdf = Pdf::loadView('laporan.obatKeluar', compact('details'))
+        $pdf = PDF::loadView('laporan.obatKeluar', compact('details'))
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'isHtml5ParserEnabled' => true,
