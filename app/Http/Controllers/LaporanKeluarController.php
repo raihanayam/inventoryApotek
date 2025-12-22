@@ -2,42 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ObatKeluar;
 use App\Models\DetailObatKeluar;
-use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanKeluarController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $bulan = $request->bulan; // format: YYYY-MM
-
-        // =======================
-        // DATA TABEL (DETAIL)
-        // =======================
-        $detailQuery = DetailObatKeluar::with([
-            'product.satuan',
-            'obat_keluar.user'
-        ]);
-
-        if ($bulan) {
-            $detailQuery->whereHas('obat_keluar', function ($q) use ($bulan) {
-                $q->whereYear('Tanggal_Keluar', substr($bulan, 0, 4))
-                  ->whereMonth('Tanggal_Keluar', substr($bulan, 5, 2));
-            });
-        }
-
-        $details = $detailQuery
-            ->orderBy(
-                \App\Models\ObatKeluar::select('Tanggal_Keluar')
-                    ->whereColumn('obat_keluars.id', 'detail_obat_keluars.obat_keluar_id')
+        $details = DetailObatKeluar::join(
+                'obat_keluars',
+                'detail_obat_keluars.obat_keluar_id',
+                '=',
+                'obat_keluars.id'
             )
-            ->paginate(7)
-            ->appends(['bulan' => $bulan]);
+            ->with([
+                'product.satuan',
+                'obat_keluar.user'
+            ])
+            ->orderBy('obat_keluars.Tanggal_Keluar', 'asc')
+            ->select('detail_obat_keluars.*')
+            ->paginate(7);
 
-        // =======================
-        // DATA GRAFIK
-        // =======================
         $currentYear = date('Y');
 
         $chartRaw = DetailObatKeluar::join(
@@ -56,36 +41,35 @@ class LaporanKeluarController extends Controller
         $chart_values = [];
 
         for ($i = 1; $i <= 12; $i++) {
-            $chart_labels[] = date('M', mktime(0, 0, 0, $i, 10));
+            $chart_labels[] = date('M', mktime(0, 0, 0, $i, 1));
             $chart_values[] = $chartRaw[$i] ?? 0;
         }
 
         return view('pages.laporanKeluar.index', compact(
             'details',
             'chart_labels',
-            'chart_values',
-            'bulan'
+            'chart_values'
         ));
     }
 
     public function exportPDF()
     {
-        ini_set('memory_limit', '512M');
-        set_time_limit(300);
+        $details = DetailObatKeluar::join(
+                'obat_keluars',
+                'detail_obat_keluars.obat_keluar_id',
+                '=',
+                'obat_keluars.id'
+            )
+            ->with([
+                'product.satuan',
+                'obat_keluar.user'
+            ])
+            ->orderBy('obat_keluars.Tanggal_Keluar', 'asc')
+            ->select('detail_obat_keluars.*')
+            ->get();
 
-        $details = DetailObatKeluar::with([
-            'product.satuan',
-            'obat_keluar.user'
-        ])
-        ->orderBy(
-            ObatKeluar::select('Tanggal_Keluar')
-                ->whereColumn('obat_keluars.id', 'detail_obat_keluars.obat_keluar_id')
-        )
-        ->get();
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.obatKeluar', [
-            'details' => $details
-        ])->setPaper('A4', 'portrait');
+        $pdf = Pdf::loadView('laporan.obatKeluar', compact('details'))
+            ->setPaper('A4', 'portrait');
 
         return $pdf->download('Laporan_Obat_Keluar.pdf');
     }
