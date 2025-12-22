@@ -37,17 +37,19 @@
     </thead>
 
     <tbody>
-        @foreach ($details as $no => $detail)
+       @foreach ($details as $no => $detail)
             <tr>
                 <td>{{ $no + 1 }}</td>
+
                 <td>
-                    {{ $detail->obat_keluar && $detail->obat_keluar->Tanggal_Keluar
+                    {{ optional($detail->obat_keluar)->Tanggal_Keluar
                         ? \Carbon\Carbon::parse($detail->obat_keluar->Tanggal_Keluar)->format('d/m/Y')
                         : '-' }}
                 </td>
-                <td>{{ $detail->obat_keluar->Id_Keluar ?? '-' }}</td>
-                <td>{{ $detail->obat_keluar->Jenis_Keluar ?? '-' }}</td>
-                <td>{{ optional($detail->obat_keluar->user)->name ?? '-' }}</td>
+
+                <td>{{ optional($detail->obat_keluar)->Id_Keluar ?? '-' }}</td>
+                <td>{{ optional($detail->obat_keluar)->Jenis_Keluar ?? '-' }}</td>
+                <td>{{ optional(optional($detail->obat_keluar)->user)->name ?? '-' }}</td>
                 <td>{{ $detail->product->name ?? '-' }}</td>
                 <td>{{ $detail->product->satuan->name ?? '-' }}</td>
                 <td>{{ $detail->Jumlah }}</td>

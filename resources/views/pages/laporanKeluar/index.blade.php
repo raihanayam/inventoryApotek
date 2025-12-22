@@ -55,13 +55,17 @@
                         @forelse ($details as $detail)
                         <tr>
                             <td>{{ ($details->currentPage() - 1) * $details->perPage() + $loop->iteration }}</td>
-                            <td>{{ $detail->obat_keluar->Tanggal_Keluar }}</td>
+                            <td>
+                                {{ optional($detail->obat_keluar)->Tanggal_Keluar
+                                    ? \Carbon\Carbon::parse($detail->obat_keluar->Tanggal_Keluar)->format('d/m/Y')
+                                    : '-' }}
+                            </td>
                             <td>{{ $detail->obat_keluar->Id_Keluar }}</td>
                             <td>{{ $detail->product->name ?? '-' }}</td>
                             <td>{{ $detail->product->satuan->name ?? '-' }}</td>
                             <td>{{ $detail->Jumlah }}</td>
                             <td>{{ $detail->obat_keluar->Jenis_Keluar }}</td>
-                            <td>{{ $detail->obat_keluar->user->name ?? '-' }}</td>
+                            <td>{{ optional(optional($detail->obat_keluar)->user)->name ?? '-' }}</td>
                         </tr>
                         @empty
                         <tr>

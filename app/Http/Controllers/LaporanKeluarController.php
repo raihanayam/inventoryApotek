@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetailObatKeluar;
+use App\Models\ObatKeluar;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanKeluarController extends Controller
 {
     public function index()
     {
-        $details = DetailObatKeluar::join(
-                'obat_keluars',
-                'detail_obat_keluars.obat_keluar_id',
-                '=',
-                'obat_keluars.id'
-            )
-            ->with([
+        $details = DetailObatKeluar::with([
                 'product.satuan',
                 'obat_keluar.user'
             ])
-            ->orderBy('obat_keluars.Tanggal_Keluar', 'asc')
-            ->select('detail_obat_keluars.*')
+            ->whereHas('obat_keluar')
+            ->orderBy(
+                ObatKeluar::select('Tanggal_Keluar')
+                    ->whereColumn('obat_keluars.id', 'detail_obat_keluars.obat_keluar_id')
+            )
             ->paginate(7);
 
+        // ===== GRAFIK =====
         $currentYear = date('Y');
 
         $chartRaw = DetailObatKeluar::join(
@@ -31,8 +30,8 @@ class LaporanKeluarController extends Controller
                 '=',
                 'obat_keluars.id'
             )
-            ->selectRaw('MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluars.Jumlah) AS total')
             ->whereYear('obat_keluars.Tanggal_Keluar', $currentYear)
+            ->selectRaw('MONTH(obat_keluars.Tanggal_Keluar) AS bulan, SUM(detail_obat_keluars.Jumlah) AS total')
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->pluck('total', 'bulan');
@@ -54,18 +53,15 @@ class LaporanKeluarController extends Controller
 
     public function exportPDF()
     {
-        $details = DetailObatKeluar::join(
-                'obat_keluars',
-                'detail_obat_keluars.obat_keluar_id',
-                '=',
-                'obat_keluars.id'
-            )
-            ->with([
+        $details = DetailObatKeluar::with([
                 'product.satuan',
                 'obat_keluar.user'
             ])
-            ->orderBy('obat_keluars.Tanggal_Keluar', 'asc')
-            ->select('detail_obat_keluars.*')
+            ->whereHas('obat_keluar')
+            ->orderBy(
+                ObatKeluar::select('Tanggal_Keluar')
+                    ->whereColumn('obat_keluars.id', 'detail_obat_keluars.obat_keluar_id')
+            )
             ->get();
 
         $pdf = Pdf::loadView('laporan.obatKeluar', compact('details'))

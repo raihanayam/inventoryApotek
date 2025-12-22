@@ -60,10 +60,14 @@
                 @forelse ($details as $detail)
                 <tr>
                     <td>{{ $no++ }}</td>
-                    <td>{{ $detail->obat_masuk->Tanggal_Masuk }}</td>
+                    <td>
+                        {{ optional($detail->obat_masuk)->Tanggal_Masuk
+                            ? \Carbon\Carbon::parse($detail->obat_masuk->Tanggal_Masuk)->format('d/m/Y')
+                            : '-' }}
+                    </td>
                     <td>{{ $detail->obat_masuk->Id_Masuk }}</td>
                     <td>{{ $detail->product->name ?? '-' }}</td>
-                    <td>{{ $detail->obat_masuk->user->name ?? '-' }}</td>
+                    <td>{{ optional(optional($detail->obat_masuk)->user)->name ?? '-' }}</td>
                     <td>{{ $detail->product->satuan->name ?? '-' }}</td>
                     <td>{{ $detail->Jumlah }}</td>
                     <td>Rp {{ number_format($detail->Harga_Beli, 0, ',', '.') }}</td>
