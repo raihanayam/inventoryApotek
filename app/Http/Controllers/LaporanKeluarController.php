@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DetailObatKeluar;
 use App\Models\ObatKeluar;
-use Barryvdh\DomPDF\Facade\PDF as PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanKeluarController extends Controller
 {
@@ -68,7 +68,7 @@ class LaporanKeluarController extends Controller
             )
             ->get();
 
-        $pdf = PDF::loadView('laporan.ObatKeluar', compact('details'))
+        $pdf = Pdf::loadView('laporan.ObatKeluar', compact('details'))
             ->setPaper('A4', 'portrait')
             ->setOptions([
                 'isHtml5ParserEnabled' => true,
