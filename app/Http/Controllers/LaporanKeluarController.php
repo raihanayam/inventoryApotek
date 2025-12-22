@@ -53,7 +53,7 @@ class LaporanKeluarController extends Controller
 
     public function exportPDF()
     {
-        // 🔒 Proteksi hosting
+        try {
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
 
@@ -77,5 +77,13 @@ class LaporanKeluarController extends Controller
             ]);
 
         return $pdf->download('Laporan_Obat_Keluar.pdf');
+        } catch (\Throwable $e) {
+            // untuk debugging (sementara)
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine(),
+            ], 500);
+        }
     }
 }
