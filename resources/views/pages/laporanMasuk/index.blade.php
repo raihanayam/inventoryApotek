@@ -30,13 +30,13 @@
 
     {{-- TABEL --}}
     <div class="card">
-        <div class="card-header text-right">
-            <form action="{{ route('laporanMasuk.exportPDF') }}" method="GET">
-                <button type="submit" class="btn btn-danger btn-sm">
-                    <i class="fas fa-file-pdf"></i> Export PDF
-                </button>
-            </form>
-        </div>
+        <div class="card-header d-flex justify-content-end">
+                @if (Route::has('laporanMasuk.exportPDF'))
+                    <a href="{{ route('laporanMasuk.exportPDF') }}" class="btn btn-danger">
+                        Export PDF
+                    </a>
+                @endif
+            </div>
 
         <div class="card-body">
             <table class="table table-bordered">

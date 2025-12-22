@@ -61,7 +61,6 @@ class LaporanKeluarController extends Controller
                 'product.satuan',
                 'obat_keluar.user'
             ])
-            ->limit(50)->get()
             ->whereHas('obat_keluar')
             ->orderBy(
                 ObatKeluar::select('Tanggal_Keluar')
