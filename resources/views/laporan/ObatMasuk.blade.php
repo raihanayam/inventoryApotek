@@ -4,14 +4,36 @@
     <meta charset="utf-8">
     <title>Laporan Obat Masuk</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 5px; }
-        th { background-color: #f2f2f2; }
-        h2, h3 { margin: 0; }
-        p { margin-top: 6px; font-size: 11px; }
-        .right { text-align: right; }
-        .total { font-weight: bold; background-color: #f9f9f9; }
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2, h3 {
+            margin: 0;
+        }
+        p {
+            margin-top: 6px;
+            font-size: 11px;
+        }
+        .right {
+            text-align: right;
+        }
+        .total {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -65,8 +87,8 @@
                     <td>{{ optional($detail->obat_masuk)->Id_Masuk ?? '-' }}</td>
                     <td>{{ optional(optional($detail->obat_masuk)->user)->name ?? '-' }}</td>
                     <td>{{ $detail->product->name ?? '-' }}</td>
-                    <td>{{ $detail->product->satuan->name ?? '-' }}</td>
-                    <td>{{ $detail->Jumlah }}</td>
+                    <td>{{ optional($detail->product->satuan)->name ?? '-' }}</td>
+                    <td class="right">{{ $detail->Jumlah }}</td>
 
                     <td class="right">{{ number_format($harga, 0, ',', '.') }}</td>
                     <td class="right">{{ number_format($subtotal, 0, ',', '.') }}</td>

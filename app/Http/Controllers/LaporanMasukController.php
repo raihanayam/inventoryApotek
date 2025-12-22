@@ -53,6 +53,10 @@ class LaporanMasukController extends Controller
 
     public function exportPDF()
     {
+        // 🔒 Tambahan supaya hosting kuat
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $details = DetailObatMasuk::with([
                 'product.satuan',
                 'obat_masuk.user'
@@ -65,7 +69,12 @@ class LaporanMasukController extends Controller
             ->get();
 
         $pdf = Pdf::loadView('laporan.obatMasuk', compact('details'))
-            ->setPaper('A4', 'portrait');
+            ->setPaper('A4', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'dejavu sans',
+            ]);
 
         return $pdf->download('Laporan_Obat_Masuk.pdf');
     }

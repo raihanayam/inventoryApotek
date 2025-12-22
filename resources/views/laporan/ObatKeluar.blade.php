@@ -4,12 +4,31 @@
     <meta charset="utf-8">
     <title>Laporan Obat Keluar</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        h2, h3 { margin: 0; padding: 0; }
-        p { margin-top: 6px; font-size: 11px; }
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2, h3 {
+            margin: 0;
+            padding: 0;
+        }
+        p {
+            margin-top: 6px;
+            font-size: 11px;
+        }
     </style>
 </head>
 <body>
@@ -37,7 +56,7 @@
     </thead>
 
     <tbody>
-       @foreach ($details as $no => $detail)
+        @foreach ($details as $no => $detail)
             <tr>
                 <td>{{ $no + 1 }}</td>
 
@@ -51,8 +70,8 @@
                 <td>{{ optional($detail->obat_keluar)->Jenis_Keluar ?? '-' }}</td>
                 <td>{{ optional(optional($detail->obat_keluar)->user)->name ?? '-' }}</td>
                 <td>{{ $detail->product->name ?? '-' }}</td>
-                <td>{{ $detail->product->satuan->name ?? '-' }}</td>
-                <td>{{ $detail->Jumlah }}</td>
+                <td>{{ optional($detail->product->satuan)->name ?? '-' }}</td>
+                <td class="right">{{ $detail->Jumlah }}</td>
             </tr>
         @endforeach
     </tbody>
