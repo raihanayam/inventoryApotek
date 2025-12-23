@@ -16,11 +16,13 @@ class LaporanStokController extends Controller
         $products = Product::with(['category', 'satuan'])->paginate(7);
 
         foreach ($products as $p) {
+
+            // HISTORI (UNTUK LAPORAN)
             $p->masuk = DetailObatMasuk::where('product_id', $p->id)->sum('Jumlah');
             $p->keluar = DetailObatKeluar::where('product_id', $p->id)->sum('Jumlah');
 
-            $p->stok_awal = 0; // optional kalau mau tambah perhitungan
-            $p->stok_akhir = $p->masuk - $p->keluar;
+            // STOK REAL (SUMBER KEBENARAN)
+            $p->stok_saat_ini = $p->stock;
         }
 
         // Obat hampir habis

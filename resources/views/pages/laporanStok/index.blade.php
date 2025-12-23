@@ -62,10 +62,10 @@
                                 <td>{{ $stok->name }}</td>
                                 <td>{{ $stok->category->name ?? '-' }}</td>
                                 <td>{{ $stok->satuan->name ?? '-' }}</td>
-                                <td>{{ $stok->stok_akhir }}</td>
+                                <td>{{ $stok->stok_saat_ini }}</td>
                                 <td>{{ $stok->masuk }}</td>
                                 <td>{{ $stok->keluar }}</td>
-                                <td>{{ $stok->stok_akhir }}</td>
+                                <td>{{ $stok->stok_saat_ini }}</td>
                             </tr>
                         @endforeach
 

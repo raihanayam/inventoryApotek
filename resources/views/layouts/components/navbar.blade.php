@@ -11,31 +11,66 @@
     <!-- Notifikasi -->
     <div class="nav-item dropdown ml-auto">
         <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-             Notifikasi
+            Notifikasi
+
             @php
-                $count = count($notifications['expired']) + count($notifications['stockOut']);
+                $count =
+                    $notifications['lowStock']->count()
+                    + $notifications['stockOut']->count();
             @endphp
+
+            @php
+                $badgeClass = 'bg-success';
+
+                if ($notifications['stockOut']->count() > 0) {
+                    $badgeClass = 'bg-danger';
+                } elseif ($notifications['lowStock']->count() > 0) {
+                    $badgeClass = 'bg-warning';
+                }
+            @endphp
+
             @if ($count > 0)
-                <span class="badge bg-danger">{{ $count }}</span>
+                <span class="badge {{ $badgeClass }}">
+                    {{ $count }}
+                </span>
             @endif
         </a>
 
         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-            @if (count($notifications['expired']) > 0)
-                <div class="dropdown-header text-danger"><strong>Obat Kedaluwarsa</strong></div>
-                @foreach ($notifications['expired'] as $item)
-                    <div class="dropdown-item text-danger">{{ $item->name }} sudah expired!</div>
+            
+            {{-- STOK HABIS --}}
+            @if ($notifications['stockOut']->count())
+                <div class="dropdown-header text-danger">
+                    <strong>Stok Habis</strong>
+                </div>
+                @foreach ($notifications['stockOut'] as $item)
+                    <div class="dropdown-item text-danger">
+                        {{ $item->name }} stok habis
+                    </div>
                 @endforeach
                 <div class="dropdown-divider"></div>
             @endif
-            @if (count($notifications['stockOut']) > 0)
-                <div class="dropdown-header text-warning"><strong>Stok Habis</strong></div>
-                @foreach ($notifications['stockOut'] as $item)
-                    <div class="dropdown-item text-warning">{{ $item->name }} stok habis!</div>
+
+            {{-- STOK MENIPIS --}}
+            @if ($notifications['lowStock']->count())
+                <div class="dropdown-header text-warning">
+                    <strong>Stok Menipis</strong>
+                </div>
+                @foreach ($notifications['lowStock'] as $item)
+                    <div class="dropdown-item text-warning">
+                        {{ $item->name }} (sisa {{ $item->stock }})
+                    </div>
                 @endforeach
             @endif
-            @if ($count == 0)
-                <div class="dropdown-item text-muted">Tidak ada notifikasi</div>
+
+            {{-- TIDAK ADA --}}
+            @if (
+                $notifications['stockOut']->count() == 0 &&
+                $notifications['lowStock']->count() == 0
+            )
+                <div class="dropdown-item text-muted">
+                    Tidak ada notifikasi
+                </div>
             @endif
         </ul>
     </div>

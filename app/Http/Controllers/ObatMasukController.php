@@ -68,9 +68,9 @@ class ObatMasukController extends Controller
                 $detail->Id_Detail_Masuk = 'DM' . str_pad($detail->id, 3, '0', STR_PAD_LEFT);
                 $detail->save();
 
-                /** UPDATE STOK → DIHITUNG DARI BATCH */
+                /** TAMBAH STOK GLOBAL */
                 $product = Product::find($item['product_id']);
-                $product->stock = $product->detail_obat_masuk()->sum('Jumlah');
+                $product->stock += $item['Jumlah'];
                 $product->save();
             }
         });

@@ -17,28 +17,19 @@ class ProductController extends Controller
     {
         $products = Product::with([
             'category',
-            'satuan',
-            'detail_obat_masuk',
-            'detail_obat_keluar'
+            'satuan'
         ])->paginate(7);
 
         $notifications = $this->getNotifications();
 
+//         dd([
+//     'expired'  => $notifications['expired']->pluck('name'),
+//     'stockOut' => $notifications['stockOut']->pluck('name'),
+// ]);
+
+        // PAKAI STOK GLOBAL (SUMBER KEBENARAN)
         foreach ($products as $p) {
-
-            // TOTAL MASUK (VALID)
-            $totalMasuk = $p->detail_obat_masuk
-                ->whereNotNull('obat_masuk_id') // pastikan relasi valid
-                ->sum('Jumlah');
-
-            // TOTAL KELUAR
-            $totalKeluar = $p->detail_obat_keluar->sum('Jumlah');
-
-            // STOK SEKARANG
-            $stok = $totalMasuk - $totalKeluar;
-
-            // cegah stok minus (penting!)
-            $p->stokSekarang = $stok > 0 ? $stok : 0;
+            $p->stokSekarang = $p->stock;
         }
 
         return view('pages.products.index', compact('products', 'notifications'));
@@ -131,20 +122,24 @@ class ProductController extends Controller
 
     private function getNotifications()
     {
-        $expired = Product::whereHas('detail_obat_masuk', function ($q) {
-            $q->whereDate('Tanggal_Kadaluwarsa', '<', now());
-        })->get();
+        // ============================
+        // NOTIFIKASI OBAT KADALUWARSA
+        // REAL STOCK (BUKAN HISTORI)
+        // ============================
+        $expired = Product::where('stock', '>', 0)
+            ->whereHas('detail_obat_masuk', function ($q) {
+                $q->whereDate('Tanggal_Kadaluwarsa', '<', now())
+                ->where('Jumlah', '>', 0); // 🔥 INI KUNCI UTAMA
+            })
+            ->get();
 
-        $stockOut = Product::with(['detail_obat_masuk', 'detail_obat_keluar'])
-            ->get()
-            ->filter(function ($product) {
-                $masuk = $product->detail_obat_masuk->sum('Jumlah');
-                $keluar = $product->detail_obat_keluar->sum('Jumlah');
-                return ($masuk - $keluar) <= 0;
-            });
+        // ============================
+        // NOTIFIKASI STOK HABIS
+        // ============================
+        $stockOut = Product::where('stock', '<=', 0)->get();
 
         return [
-            'expired' => $expired,
+            'expired'  => $expired,
             'stockOut' => $stockOut,
         ];
     }

@@ -33,7 +33,6 @@
                                 <th>Kategori</th>
                                 <th>Satuan</th>
                                 <th>Stok Saat Ini</th>
-                                <th>Tanggal Kadaluwarsa</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -48,7 +47,6 @@
                                     <td>{{ $product->category->name ?? '-' }}</td>
                                     <td>{{ $product->satuan->name ?? '-' }}</td>
                                     <td>{{ $product->stokSekarang }}</td>
-                                    <td>{{ $product->expiredSoonest() ?? '-' }}</td>
                                     <td>
                                         <div class="d-flex">
                                             <a href="/products/{{ $product->id }}" class="btn btn-info btn-sm mr-2">

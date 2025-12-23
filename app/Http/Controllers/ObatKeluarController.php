@@ -56,40 +56,34 @@ class ObatKeluarController extends Controller
 
             foreach ($request->product_id as $i => $productId) {
 
-                $jumlahKeluar = $request->Jumlah[$i];
-                $product = Product::findOrFail($productId);
+            $jumlahKeluar = $request->Jumlah[$i];
+            $product = Product::findOrFail($productId);
 
-                /** QUERY BATCH (FEFO) */
-                $batchQuery = $product->detail_obat_masuk()
-                    ->where('Jumlah', '>', 0);
+            // ============================
+            // JIKA KADALUARSA → POTONG BATCH
+            // ============================
+            if ($request->Jenis_Keluar === 'Kadaluarsa') {
 
-                // KHUSUS KADALUARSA → AMBIL YANG SUDAH EXPIRED SAJA
-                if ($request->Jenis_Keluar === 'Kadaluarsa') {
-                    $batchQuery->whereDate('Tanggal_Kadaluwarsa', '<', now());
-                }
-
-                $batches = $batchQuery
+                $batches = $product->detail_obat_masuk()
+                    ->where('Jumlah', '>', 0)
+                    ->whereDate('Tanggal_Kadaluwarsa', '<', now())
                     ->orderBy('Tanggal_Kadaluwarsa', 'ASC')
                     ->get();
 
-                /** VALIDASI KADALUARSA */
-                if ($request->Jenis_Keluar === 'Kadaluarsa' && $batches->isEmpty()) {
+                if ($batches->isEmpty()) {
                     throw ValidationException::withMessages([
                         'Jenis_Keluar' => 'Tidak ada stok obat yang sudah kadaluarsa.'
                     ]);
                 }
 
-                /** HITUNG TOTAL STOK VALID */
-                $stokValid = $batches->sum('Jumlah');
-                if ($jumlahKeluar > $stokValid) {
+                if ($jumlahKeluar > $batches->sum('Jumlah')) {
                     throw ValidationException::withMessages([
                         'Jumlah' => "Stok {$product->name} tidak mencukupi."
                     ]);
                 }
 
-                /** FEFO PENGURANGAN BATCH */
+                // FEFO
                 $sisa = $jumlahKeluar;
-
                 foreach ($batches as $batch) {
                     if ($sisa <= 0) break;
 
@@ -103,26 +97,29 @@ class ObatKeluarController extends Controller
 
                     $batch->save();
                 }
-
-                /** SIMPAN DETAIL KELUAR */
-                $detail = DetailObatKeluar::create([
-                    'obat_keluar_id' => $obat_keluar->id,
-                    'product_id'     => $productId,
-                    'Jumlah'         => $jumlahKeluar,
-                ]);
-
-                $detail->Id_Detail_Keluar = 'DK' . str_pad($detail->id, 3, '0', STR_PAD_LEFT);
-                $detail->save();
-
-                /** UPDATE STOK PRODUK (REAL) */
-                $product->stock -= $jumlahKeluar;
-
-                if ($product->stock < 0) {
-                    $product->stock = 0;
-                }
-
-                $product->save();
             }
+
+            // ============================
+            // SIMPAN DETAIL OBAT KELUAR
+            // ============================
+            $detail = DetailObatKeluar::create([
+                'obat_keluar_id' => $obat_keluar->id,
+                'product_id'     => $productId,
+                'Jumlah'         => $jumlahKeluar,
+            ]);
+
+            $detail->Id_Detail_Keluar = 'DK' . str_pad($detail->id, 3, '0', STR_PAD_LEFT);
+            $detail->save();
+
+            // ============================
+            // STOK GLOBAL (SELALU)
+            // ============================
+            $product->stock -= $jumlahKeluar;
+            if ($product->stock < 0) {
+                $product->stock = 0;
+            }
+            $product->save();
+        }
         });
 
         return redirect('/keluar')->with('success', 'Data obat keluar berhasil disimpan.');

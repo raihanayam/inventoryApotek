@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\DetailObatMasuk;
 use App\Models\DetailObatKeluar;
@@ -19,23 +20,30 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
 
-            // Obat expired
-            $expired = Product::whereHas('detail_obat_masuk', function ($q) {
-                $q->whereDate('Tanggal_Kadaluwarsa', '<', now());
-            })->get();
+            // ============================
+            // STOK MENIPIS
+            // ============================
+            $lowStock = Product::where('stock', '>', 0)
+                ->where('stock', '<=', 5)
+                ->whereHas('satuan', function ($q) {
+                    $q->whereNotIn('name', ['box', 'pack']);
+                })
+                ->get();
 
-            // Obat stok habis
-            $stockOut = Product::with(['detail_obat_masuk', 'detail_obat_keluar'])
-                ->get()
-                ->filter(function ($product) {
-                    $masuk = $product->detail_obat_masuk->sum('Jumlah');
-                    $keluar = $product->detail_obat_keluar->sum('Jumlah');
-                    return ($masuk - $keluar) <= 0;
-                });
+            // ============================
+            // STOK HABIS
+            // ============================
+            $stockOut = Product::where('stock', '<=', 0)->get();
 
-            // Kirim ke semua view
+//                 dd([
+//     'expired' => $expired,
+//     'stockOut' => $stockOut,
+//     'lowStock' => $lowStock,
+// ]);
+
+
             $view->with('notifications', [
-                'expired' => $expired,
+                'lowStock' => $lowStock,
                 'stockOut' => $stockOut,
             ]);
         });
